@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Air Guitar 🎸</title>
+<style>
+body {
+  margin: 0;
+  background: black;
+  color: white;
+  text-align: center;
+  font-family: sans-serif;
+}
+video {
+  width: 90%;
+  max-width: 400px;
+}
+button {
+  padding: 10px 20px;
+  font-size: 16px;
+}
+</style>
+</head>
+
+<body>
+
+<h2>Air Guitar 🎸</h2>
+<p id="status">Press start</p>
+<button onclick="startAudio()">Start</button>
+
+<br><br>
+<video id="video" autoplay playsinline></video>
+
+<script>
+// CAMERA
+const video = document.getElementById("video");
+
+navigator.mediaDevices.getUserMedia({ video: true })
+.then(stream => video.srcObject = stream)
+.catch(() => {
+  document.getElementById("status").innerText = "Camera blocked ❌";
+});
+
+// AUDIO
+let audioCtx;
+
+function startAudio() {
+  audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  document.getElementById("status").innerText = "Sound ON 🎸";
+}
+
+// SOUND
+function playSound(freq) {
+  if (!audioCtx) return;
+
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+
+  osc.connect(gain);
+  gain.connect(audioCtx.destination);
+
+  osc.type = "sawtooth";
+  osc.frequency.value = freq;
+
+  gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+
+  osc.start();
+  osc.stop(audioCtx.currentTime + 0.15);
+}
+
+// STRUM (drag finger)
+let lastTime = 0;
+
+document.addEventListener("touchmove", () => {
+  let now = Date.now();
+
+  if (now - lastTime > 200) {
+    let pitch = 150 + Math.random() * 300;
+    playSound(pitch);
+    lastTime = now;
+  }
+});
+</script>
+
+</body>
+</html>
